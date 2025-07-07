@@ -63,4 +63,4 @@ tzdata
 urllib3
 watchdog
 zstandard
-tavily-search
+
