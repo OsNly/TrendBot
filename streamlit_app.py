@@ -36,15 +36,29 @@ def get_trending_places(place_type: str):
     return top_names
 
 if st.button("🔍 Use Live Web Search + Generate Reports"):
-    with st.spinner("Searching the web for trending places in Riyadh..."):
+    # Raw debug log for Tavily search
+    with st.expander("🔍 Raw Tavily Search Debug"):
+        st.markdown("### 🔎 Cafes")
+        cafe_raw = tavily.search(query="trending cafes in Riyadh", search_depth="advanced")
+        st.json(cafe_raw)
 
-        cafes = get_trending_places("cafes")
-        restaurants = get_trending_places("restaurants")
-        parks = get_trending_places("parks")
+        st.markdown("### 🍽️ Restaurants")
+        restaurant_raw = tavily.search(query="trending restaurants in Riyadh", search_depth="advanced")
+        st.json(restaurant_raw)
 
-        st.markdown(f"✅ **Top Cafes**: {', '.join(cafes)}")
-        st.markdown(f"✅ **Top Restaurants**: {', '.join(restaurants)}")
-        st.markdown(f"✅ **Top Parks**: {', '.join(parks)}")
+        st.markdown("### 🌳 Parks")
+        park_raw = tavily.search(query="trending parks in Riyadh", search_depth="advanced")
+        st.json(park_raw)
+
+# Clean extracted names
+cafes = get_trending_places("cafes")
+restaurants = get_trending_places("restaurants")
+parks = get_trending_places("parks")
+
+st.markdown(f"✅ **Top Cafes**: {', '.join(cafes)}")
+st.markdown(f"✅ **Top Restaurants**: {', '.join(restaurants)}")
+st.markdown(f"✅ **Top Parks**: {', '.join(parks)}")
+(f"✅ **Top Parks**: {', '.join(parks)}")
 
         prompt = f"""
 You are a social media trends expert in Riyadh, Saudi Arabia.
