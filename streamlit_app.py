@@ -11,16 +11,25 @@ st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Par
 
 prompt = """
 You are a social media trends expert in Riyadh, Saudi Arabia.
-Your goal is:
-1- Find 3 sets of trendy [Cafes, Restaurants, Parks] in Riyadh.
-2- Write a casual report in Arabic on (one cafe, one restaurant, one park) in Riyadh for each combination of the three sets.
-Each report should be 3-5 sentences max, friendly and informative.
-Output as JSON with this format:
+
+Your task:
+1. Think of 3 popular cafes, 3 restaurants, and 3 parks currently trending in Riyadh.
+2. For each set, write a friendly, short report in Arabic (3-5 sentences) combining one cafe, one restaurant, and one park.
+3. Only return JSON in this exact format:
+
 [
-  {"cafe": "...", "restaurant": "...", "park": "...", "report": "..."},
+  {
+    "cafe": "Grin",
+    "restaurant": "Blu Pizzeria",
+    "park": "Wadi Namar",
+    "report": "Grin is the go-to café for creatives in Riyadh. Grab your espresso then head to Blu Pizzeria nearby for a wood-fired lunch. Finish the day relaxing at Wadi Namar, where walking trails and lakeside views give the perfect wind-down."
+  },
   ...
 ]
+Return exactly 3 items.
+DO NOT include any text before or after the JSON block.
 """
+
 
 
 if st.button("📊 Generate Trend Reports"):
