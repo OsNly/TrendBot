@@ -8,10 +8,10 @@ st.set_page_config(page_title="Trendy Riyadh", layout="wide")
 st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
 
-# Load Tavily client using Streamlit secrets
+# Load Tavily client from Streamlit secrets
 tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 
-# Utility to extract only JSON from LLM output
+# --- JSON extractor from LLM output ---
 def extract_json_from_text(text: str):
     match = re.search(r"\[.*?\]", text, re.DOTALL)
     if match:
@@ -19,7 +19,7 @@ def extract_json_from_text(text: str):
     else:
         raise ValueError("No JSON block found in LLM output.")
 
-# Utility to search top 3 entities for a place type
+# --- Tavily search + name extractor ---
 def get_trending_places(place_type: str):
     query = f"trending {place_type} in Riyadh"
     res = tavily.search(query=query, search_depth="advanced")
@@ -35,33 +35,34 @@ def get_trending_places(place_type: str):
             break
     return top_names
 
+# --- Main Button ---
 if st.button("🔍 Use Live Web Search + Generate Reports"):
-    # Raw debug log for Tavily search
-    with st.expander("🔍 Raw Tavily Search Debug"):
-        st.markdown("### 🔎 Cafes")
-        cafe_raw = tavily.search(query="trending cafes in Riyadh", search_depth="advanced")
-        st.json(cafe_raw)
+    with st.spinner("Searching the web for trending places in Riyadh..."):
 
-        st.markdown("### 🍽️ Restaurants")
-        restaurant_raw = tavily.search(query="trending restaurants in Riyadh", search_depth="advanced")
-        st.json(restaurant_raw)
+        # 🔍 Raw debug view of Tavily search results
+        with st.expander("🔍 Raw Tavily Search Results"):
+            cafe_raw = tavily.search(query="trending cafes in Riyadh", search_depth="advanced")
+            restaurant_raw = tavily.search(query="trending restaurants in Riyadh", search_depth="advanced")
+            park_raw = tavily.search(query="trending parks in Riyadh", search_depth="advanced")
 
-        st.markdown("### 🌳 Parks")
-        park_raw = tavily.search(query="trending parks in Riyadh", search_depth="advanced")
-        st.json(park_raw)
+            st.markdown("### ☕ Cafes (Raw)")
+            st.json(cafe_raw)
+            st.markdown("### 🍽️ Restaurants (Raw)")
+            st.json(restaurant_raw)
+            st.markdown("### 🌳 Parks (Raw)")
+            st.json(park_raw)
 
-# Clean extracted names
-cafes = get_trending_places("cafes")
-restaurants = get_trending_places("restaurants")
-parks = get_trending_places("parks")
+        # ✅ Clean extracted names
+        cafes = get_trending_places("cafes")
+        restaurants = get_trending_places("restaurants")
+        parks = get_trending_places("parks")
 
-st.markdown(f"✅ **Top Cafes**: {', '.join(cafes)}")
-st.markdown(f"✅ **Top Restaurants**: {', '.join(restaurants)}")
-st.markdown(f"✅ **Top Parks**: {', '.join(parks)}")
-(f"✅ **Top Parks**: {', '.join(parks)}")
+        st.markdown(f"✅ **Top Cafes:** {', '.join(cafes)}")
+        st.markdown(f"✅ **Top Restaurants:** {', '.join(restaurants)}")
+        st.markdown(f"✅ **Top Parks:** {', '.join(parks)}")
 
-
-prompt = f"""
+        # 🧠 Prompt construction
+        prompt = f"""
 You are a social media trends expert in Riyadh, Saudi Arabia.
 
 Your task:
@@ -87,6 +88,11 @@ Return exactly 3 items.
 DO NOT include any text before or after the JSON block.
 """
 
+        # 🧪 Debug: Show final prompt sent to LLM
+        with st.expander("🧠 Final Prompt Sent to LLM"):
+            st.code(prompt)
+
+        # 🚀 Call the LLM
         with st.spinner("Generating Arabic trend reports..."):
             llm_response = call_llm(prompt)
 
