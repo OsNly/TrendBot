@@ -9,8 +9,7 @@ import os
 
 # Make sure LangChain Tavily tool uses your key
 TAVILY_API_KEY = st.secrets["tavily"]["api_key"]
-search_tool = TavilySearchResults(k=3)
-
+search_tool = TavilySearchResults()
 st.set_page_config(page_title="Trendy Riyadh", layout="wide")
 st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
