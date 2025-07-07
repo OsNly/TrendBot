@@ -9,7 +9,7 @@ st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
 
 
-visual_prompt = PromptTemplate.from_template("""
+prompt = """
 You are a social media trends expert in Riyadh, Saudi Arabia.
 Your goal is:
 1- Find 3 sets of trendy [Cafes, Restaurants, Parks] in Riyadh.
@@ -20,7 +20,7 @@ Output as JSON with this format:
   {"cafe": "...", "restaurant": "...", "park": "...", "report": "..."},
   ...
 ]
-""")
+"""
 
 
 if st.button("📊 Generate Trend Reports"):
