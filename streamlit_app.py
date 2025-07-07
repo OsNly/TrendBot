@@ -1,15 +1,19 @@
 import re
 import json
 import streamlit as st
-from tavily import TavilyClient
 from openai_client import call_llm
+
+# 🔄 NEW: LangChain Tavily tool
+from langchain_community.tools.tavily_search import TavilySearchResults
+import os
+
+# Make sure LangChain Tavily tool uses your key
+os.environ["TAVILY_API_KEY"] = st.secrets["TAVILY_API_KEY"]
+search_tool = TavilySearchResults(k=3)
 
 st.set_page_config(page_title="Trendy Riyadh", layout="wide")
 st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
-
-# Load Tavily client from Streamlit secrets
-tavily = TavilyClient(api_key=st.secrets["TAVILY_API_KEY"])
 
 # --- JSON extractor from LLM output ---
 def extract_json_from_text(text: str):
@@ -19,40 +23,40 @@ def extract_json_from_text(text: str):
     else:
         raise ValueError("No JSON block found in LLM output.")
 
-# --- Tavily search + name extractor ---
+# --- Extract top 3 distinct names from LangChain Tavily results ---
 def get_trending_places(place_type: str):
     query = f"trending {place_type} in Riyadh"
-    res = tavily.search(query=query, search_depth="advanced")
-    top_names = []
-    for result in res["results"]:
-        title = result.get("title", "")
-        match = re.search(r"(?i)([A-Za-zأ-ي0-9\s\-']+)", title)
-        if match:
-            name = match.group(1).strip()
-            if name and name not in top_names:
-                top_names.append(name)
-        if len(top_names) == 3:
+    response = search_tool.run(query)
+    
+    # Basic extraction using regex over response string
+    found_names = re.findall(r"([A-Za-zأ-ي0-9\s\-\']{3,})", response)
+    seen = set()
+    unique = []
+    for name in found_names:
+        clean = name.strip()
+        if clean and clean not in seen:
+            seen.add(clean)
+            unique.append(clean)
+        if len(unique) == 3:
             break
-    return top_names
+    return unique
 
 # --- Main Button ---
 if st.button("🔍 Use Live Web Search + Generate Reports"):
     with st.spinner("Searching the web for trending places in Riyadh..."):
 
-        # 🔍 Raw debug view of Tavily search results
-        with st.expander("🔍 Raw Tavily Search Results"):
-            cafe_raw = tavily.search(query="trending cafes in Riyadh", search_depth="advanced")
-            restaurant_raw = tavily.search(query="trending restaurants in Riyadh", search_depth="advanced")
-            park_raw = tavily.search(query="trending parks in Riyadh", search_depth="advanced")
+        # 🔍 Debug View: Raw search output
+        with st.expander("🔍 Raw Tavily Search Summaries"):
+            st.markdown("### ☕ Cafes")
+            st.write(search_tool.run("trending cafes in Riyadh"))
 
-            st.markdown("### ☕ Cafes (Raw)")
-            st.json(cafe_raw)
-            st.markdown("### 🍽️ Restaurants (Raw)")
-            st.json(restaurant_raw)
-            st.markdown("### 🌳 Parks (Raw)")
-            st.json(park_raw)
+            st.markdown("### 🍽️ Restaurants")
+            st.write(search_tool.run("trending restaurants in Riyadh"))
 
-        # ✅ Clean extracted names
+            st.markdown("### 🌳 Parks")
+            st.write(search_tool.run("trending parks in Riyadh"))
+
+        # ✅ Extract clean names
         cafes = get_trending_places("cafes")
         restaurants = get_trending_places("restaurants")
         parks = get_trending_places("parks")
@@ -61,7 +65,7 @@ if st.button("🔍 Use Live Web Search + Generate Reports"):
         st.markdown(f"✅ **Top Restaurants:** {', '.join(restaurants)}")
         st.markdown(f"✅ **Top Parks:** {', '.join(parks)}")
 
-        # 🧠 Prompt construction
+        # 🧠 Final LLM Prompt
         prompt = f"""
 You are a social media trends expert in Riyadh, Saudi Arabia.
 
@@ -88,11 +92,10 @@ Return exactly 3 items.
 DO NOT include any text before or after the JSON block.
 """
 
-        # 🧪 Debug: Show final prompt sent to LLM
         with st.expander("🧠 Final Prompt Sent to LLM"):
             st.code(prompt)
 
-        # 🚀 Call the LLM
+        # 🤖 Call LLM
         with st.spinner("Generating Arabic trend reports..."):
             llm_response = call_llm(prompt)
 
