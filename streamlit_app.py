@@ -60,7 +60,8 @@ st.markdown(f"✅ **Top Restaurants**: {', '.join(restaurants)}")
 st.markdown(f"✅ **Top Parks**: {', '.join(parks)}")
 (f"✅ **Top Parks**: {', '.join(parks)}")
 
-        prompt = f"""
+
+prompt = f"""
 You are a social media trends expert in Riyadh, Saudi Arabia.
 
 Your task:
