@@ -8,7 +8,7 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 import os
 
 # Make sure LangChain Tavily tool uses your key
-os.environ["TAVILY_API_KEY"] = st.secrets["TAVILY_API_KEY"]
+TAVILY_API_KEY = st.secrets["tavily"]["api_key"]
 search_tool = TavilySearchResults(k=3)
 
 st.set_page_config(page_title="Trendy Riyadh", layout="wide")
