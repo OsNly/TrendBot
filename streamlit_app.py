@@ -1,13 +1,11 @@
-import streamlit as st
-from langchain_core.prompts import PromptTemplate
-from openai_client import call_llm 
+import re
 import json
+import streamlit as st
+from openai_client import call_llm
 
 st.set_page_config(page_title="Trendy Riyadh", layout="wide")
-
 st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
-
 
 prompt = """
 You are a social media trends expert in Riyadh, Saudi Arabia.
@@ -30,7 +28,12 @@ Return exactly 3 items.
 DO NOT include any text before or after the JSON block.
 """
 
-
+def extract_json_from_text(text: str):
+    match = re.search(r"\[.*?\]", text, re.DOTALL)
+    if match:
+        return json.loads(match.group(0))
+    else:
+        raise ValueError("No JSON block found in LLM output.")
 
 if st.button("📊 Generate Trend Reports"):
     with st.spinner("Thinking like a Riyadh influencer..."):
@@ -38,8 +41,8 @@ if st.button("📊 Generate Trend Reports"):
         llm_response = call_llm(prompt)
 
         try:
-            results = json.loads(llm_response)
-            st.success("Done! Here's what’s hot in Riyadh 🔥")
+            results = extract_json_from_text(llm_response)
+            st.success("✅ Here's what's trending:")
 
             for i, item in enumerate(results, 1):
                 with st.container():
@@ -50,10 +53,9 @@ if st.button("📊 Generate Trend Reports"):
                     st.markdown(f"📌 _{item['report']}_")
                     st.markdown("---")
 
-        except json.JSONDecodeError:
-            st.error("❌ Couldn't parse LLM response. Try again or check the prompt.")
+        except Exception as e:
+            st.error(f"❌ Couldn't parse LLM response: {e}")
             st.text("Raw LLM Output:")
             st.code(llm_response)
-
 else:
-    st.info("Click the button above to generate trending place reports.")   
+    st.info("Click the button above to generate trending place reports.")
