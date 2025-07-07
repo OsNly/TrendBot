@@ -25,7 +25,7 @@ Output as JSON with this format:
 
 if st.button("📊 Generate Trend Reports"):
     with st.spinner("Thinking like a Riyadh influencer..."):
-        prompt = visual_prompt
+
         llm_response = call_llm(prompt)
 
         try:
