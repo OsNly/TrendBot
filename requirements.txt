@@ -1,4 +1,3 @@
-tavily-search
 altair
 annotated-types
 anyio
@@ -64,3 +63,4 @@ tzdata
 urllib3
 watchdog
 zstandard
+tavily-search
