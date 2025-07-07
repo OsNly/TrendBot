@@ -12,7 +12,7 @@ You are a social media trends expert in Riyadh, Saudi Arabia.
 
 Your task:
 1. Think of 3 popular cafes, 3 restaurants, and 3 parks currently trending in Riyadh.
-2. For each set, write a friendly, short report in Arabic (3-5 sentences) combining one cafe, one restaurant, and one park.
+2. For each set, write a friendly, short report in Arabic NOT in English (3-5 sentences) combining one cafe, one restaurant, and one park.
 3. Only return JSON in this exact format:
 
 [
