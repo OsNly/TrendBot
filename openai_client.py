@@ -14,8 +14,7 @@ client = OpenAI(
     }
 )
 
-MODEL = "google/gemini-2.0-flash-exp:free"
-
+MODEL = "google/gemini-2.0-flash-lite-001"
 def call_llm(prompt: str, temperature: float = 0.0) -> str:
     resp = client.chat.completions.create(
         model=MODEL,
