@@ -10,7 +10,7 @@ st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
 
 # 🔐 Load Tavily API key from secrets
-TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY")
+TAVILY_API_KEY = st.secrets["tavily"]["api_key"]
 
 # --- Helper: Extract JSON array from LLM response ---
 def extract_json_from_text(text: str):
