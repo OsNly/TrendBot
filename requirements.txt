@@ -64,4 +64,4 @@ urllib3
 watchdog
 zstandard
 langchain-community
-tavily
+
