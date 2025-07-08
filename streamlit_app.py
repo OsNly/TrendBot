@@ -23,7 +23,7 @@ def extract_json_from_text(text: str):
 # --- Helper: Search Tavily and extract top 3 unique names ---
 def get_trending_places(place_type: str):
     query = f"trending {place_type} in Riyadh"
-    url = "https://api.tavily.com/v1/search"
+    url = "https://api.tavily.com/search"
     headers = {"Authorization": f"Bearer {TAVILY_API_KEY}"}
     params = {"query": query, "search_depth": "basic", "include_answer": True}
 
