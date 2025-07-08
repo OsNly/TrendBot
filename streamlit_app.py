@@ -1,20 +1,18 @@
 import re
 import json
+import os
+import requests
 import streamlit as st
 from openai_client import call_llm
 
-# 🔄 NEW: LangChain Tavily tool
-from langchain_community.tools.tavily_search import TavilySearchResults
-import os
-
-# Make sure LangChain Tavily tool uses your key
-TAVILY_API_KEY = st.secrets["tavily"]["api_key"]
-search_tool = TavilySearchResults()
 st.set_page_config(page_title="Trendy Riyadh", layout="wide")
 st.title("📍 Trendy Places in Riyadh")
 st.markdown("Get casual expert reports on popular **Cafés, Restaurants, and Parks** in Riyadh.")
 
-# --- JSON extractor from LLM output ---
+# 🔐 Load Tavily API key from secrets
+TAVILY_API_KEY = st.secrets.get("TAVILY_API_KEY")
+
+# --- Helper: Extract JSON array from LLM response ---
 def extract_json_from_text(text: str):
     match = re.search(r"\[.*?\]", text, re.DOTALL)
     if match:
@@ -22,13 +20,23 @@ def extract_json_from_text(text: str):
     else:
         raise ValueError("No JSON block found in LLM output.")
 
-# --- Extract top 3 distinct names from LangChain Tavily results ---
+# --- Helper: Search Tavily and extract top 3 unique names ---
 def get_trending_places(place_type: str):
     query = f"trending {place_type} in Riyadh"
-    response = search_tool.run(query)
-    
-    # Basic extraction using regex over response string
-    found_names = re.findall(r"([A-Za-zأ-ي0-9\s\-\']{3,})", response)
+    url = "https://api.tavily.com/v1/search"
+    headers = {"Authorization": f"Bearer {TAVILY_API_KEY}"}
+    params = {"query": query, "search_depth": "basic", "include_answer": True}
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code != 200:
+        raise Exception(f"Tavily API error: {response.status_code} - {response.text}")
+
+    data = response.json()
+    answer_text = data.get("answer", "")
+
+    # Extract candidate names from the answer text
+    found_names = re.findall(r"([A-Za-zأ-ي0-9\s\-\']{3,})", answer_text)
     seen = set()
     unique = []
     for name in found_names:
@@ -38,33 +46,26 @@ def get_trending_places(place_type: str):
             unique.append(clean)
         if len(unique) == 3:
             break
+
     return unique
 
-# --- Main Button ---
+# --- UI Trigger ---
 if st.button("🔍 Use Live Web Search + Generate Reports"):
     with st.spinner("Searching the web for trending places in Riyadh..."):
 
-        # 🔍 Debug View: Raw search output
-        with st.expander("🔍 Raw Tavily Search Summaries"):
-            st.markdown("### ☕ Cafes")
-            st.write(search_tool.run("trending cafes in Riyadh"))
-
-            st.markdown("### 🍽️ Restaurants")
-            st.write(search_tool.run("trending restaurants in Riyadh"))
-
-            st.markdown("### 🌳 Parks")
-            st.write(search_tool.run("trending parks in Riyadh"))
-
-        # ✅ Extract clean names
-        cafes = get_trending_places("cafes")
-        restaurants = get_trending_places("restaurants")
-        parks = get_trending_places("parks")
+        try:
+            cafes = get_trending_places("cafes")
+            restaurants = get_trending_places("restaurants")
+            parks = get_trending_places("parks")
+        except Exception as e:
+            st.error(f"❌ Tavily error: {e}")
+            st.stop()
 
         st.markdown(f"✅ **Top Cafes:** {', '.join(cafes)}")
         st.markdown(f"✅ **Top Restaurants:** {', '.join(restaurants)}")
         st.markdown(f"✅ **Top Parks:** {', '.join(parks)}")
 
-        # 🧠 Final LLM Prompt
+        # 🧠 Prompt for OpenRouter LLM
         prompt = f"""
 You are a social media trends expert in Riyadh, Saudi Arabia.
 
@@ -91,10 +92,9 @@ Return exactly 3 items.
 DO NOT include any text before or after the JSON block.
 """
 
-        with st.expander("🧠 Final Prompt Sent to LLM"):
+        with st.expander("🧠 Prompt sent to LLM"):
             st.code(prompt)
 
-        # 🤖 Call LLM
         with st.spinner("Generating Arabic trend reports..."):
             llm_response = call_llm(prompt)
 
@@ -115,6 +115,5 @@ DO NOT include any text before or after the JSON block.
                 st.error(f"❌ Couldn't parse LLM response: {e}")
                 st.text("Raw LLM Output:")
                 st.code(llm_response)
-
 else:
     st.info("Click the button above to search the web and generate trending place reports.")
