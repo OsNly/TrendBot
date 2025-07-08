@@ -25,9 +25,13 @@ def get_trending_places(place_type: str):
     query = f"trending {place_type} in Riyadh"
     url = "https://api.tavily.com/search"
     headers = {"Authorization": f"Bearer {TAVILY_API_KEY}"}
-    params = {"query": query, "search_depth": "basic", "include_answer": True}
+    params = {
+        "query": query,
+        "search_depth": "basic",
+        "include_answer": True
+    }
 
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.post(url, headers=headers, json=params)
 
     if response.status_code != 200:
         raise Exception(f"Tavily API error: {response.status_code} - {response.text}")
@@ -35,7 +39,7 @@ def get_trending_places(place_type: str):
     data = response.json()
     answer_text = data.get("answer", "")
 
-    # Extract candidate names from the answer text
+    # Extract candidate names
     found_names = re.findall(r"([A-Za-zأ-ي0-9\s\-\']{3,})", answer_text)
     seen = set()
     unique = []
@@ -48,6 +52,7 @@ def get_trending_places(place_type: str):
             break
 
     return unique
+
 
 # --- UI Trigger ---
 if st.button("🔍 Use Live Web Search + Generate Reports"):
