@@ -80,7 +80,7 @@ Your task:
    - Restaurants: {', '.join(restaurants)}
    - Parks: {', '.join(parks)}
 
-2. Write 3 friendly, short reports in **Arabic** (10-15 sentences) combining **one cafe, one restaurant, and one park** per set.
+2. Write 3 friendly, short reports in **Arabic** (20-30 sentences) combining **one cafe, one restaurant, and one park** per set.
 3. Only return JSON in this exact format:
 
 [
